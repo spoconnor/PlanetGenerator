@@ -9,15 +9,10 @@ namespace PlanetGenerator
 			Console.WriteLine ("Hello World!");
 
 			var landscape = new Landscape ();
-			using (TestGameWindow test = new TestGameWindow())
-			{
-				test.Run ();
-			}
-			/*
 			using (GameRenderer gameRenderer = new GameRenderer(landscape))
 			{
 				gameRenderer.Run(30.0);
-			}*/
+			}
 		}
 
 		/*

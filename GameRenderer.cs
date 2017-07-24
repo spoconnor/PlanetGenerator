@@ -12,7 +12,12 @@ namespace PlanetGenerator
 {
 	class GameRenderer : GameWindow
 	{
-		TextRenderer renderer;
+        VertexBuffer<ColouredVertex> vertexBuffer;
+        ShaderProgram shaderProgram;
+        VertexArray<ColouredVertex> vertexArray;
+        Matrix4Uniform projectionMatrix;
+
+        TextRenderer renderer;
 		Landscape Landscape;
 		MouseState mouseState;
 		Font serif = new Font(FontFamily.GenericSerif, 24);
@@ -25,7 +30,7 @@ namespace PlanetGenerator
 
 		float Scale = 1.0f;
 		int Direction = 1;
-		Sean.Shared.Vector3 LookingAt;
+		Vector3 LookingAt;
 
 		float lookingX=0.0f,lookingY=0.0f,lookingZ=0.0f;
 		float cameraX=0.0f,cameraY=0.0f,cameraZ=5.0f;
@@ -70,22 +75,73 @@ namespace PlanetGenerator
 			GL.Color3(1.0, 1.0, 1.0);
 
 
+            // create and fill a vertex buffer
+            this.vertexBuffer = new VertexBuffer<ColouredVertex>(ColouredVertex.Size);
 
-			double aspect_ratio = Width / (double)Height; // Aspect ratio of the screen
-			float fov = 1.0f;  // camera field of view
-			float near_distance = 1.0f; // The nearest the camera can see. >= 0.1f else clips
-			float far_distance = 1000.0f; // Fartherest the camera can see
+            this.vertexBuffer.AddVertex(new ColouredVertex(new Vector3(-1, -1, -1.5f), Color4.Lime));
+            this.vertexBuffer.AddVertex(new ColouredVertex(new Vector3(1, 1, -1.5f), Color4.Red));
+            this.vertexBuffer.AddVertex(new ColouredVertex(new Vector3(1, -1, -1.5f), Color4.Blue));
 
-			OpenTK.Matrix4 perspective_matrix =
-				OpenTK.Matrix4.CreatePerspectiveFieldOfView(fov, (float)aspect_ratio, near_distance, far_distance);
+            // load shaders
+            #region Shaders
 
-			//Then we tell GL to use are matrix as the new Projection matrix.
-			GL.MatrixMode(MatrixMode.Projection);
-			GL.LoadMatrix(ref perspective_matrix);
+            var vertexShader = new Shader(ShaderType.VertexShader,
+                @"#version 130
+// a projection transformation to apply to the vertex' position
+uniform mat4 projectionMatrix;
+// attributes of our vertex
+in vec3 vPosition;
+in vec4 vColor;
+out vec4 fColor; // must match name in fragment shader
+void main()
+{
+    // gl_Position is a special variable of OpenGL that must be set
+	gl_Position = projectionMatrix * vec4(vPosition, 1.0);
+	fColor = vColor;
+}"
+                );
+            var fragmentShader = new Shader(ShaderType.FragmentShader,
+                @"#version 130
+in vec4 fColor; // must match name in vertex shader
+out vec4 fragColor; // first out variable is automatically written to the screen
+void main()
+{
+    fragColor = fColor;
+}"
+                );
+
+            #endregion
+
+            // link shaders into shader program
+            this.shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
+
+            // create vertex array to specify vertex layout
+            this.vertexArray = new VertexArray<ColouredVertex>(
+                this.vertexBuffer, this.shaderProgram,
+                new VertexAttribute("vPosition", 3, VertexAttribPointerType.Float, ColouredVertex.Size, 0),
+                new VertexAttribute("vColor", 4, VertexAttribPointerType.Float, ColouredVertex.Size, 12)
+            );
+
+            float aspect_ratio = Width / (float)Height; // Aspect ratio of the screen
+
+            // create projection matrix uniform
+            this.projectionMatrix = new Matrix4Uniform("projectionMatrix");
+            this.projectionMatrix.Matrix = Matrix4.CreatePerspectiveFieldOfView(
+                MathHelper.PiOver2, aspect_ratio, 0.1f, 100f);
+
+			//float fov = 1.0f;  // camera field of view
+			//float near_distance = 1.0f; // The nearest the camera can see. >= 0.1f else clips
+			//float far_distance = 1000.0f; // Fartherest the camera can see
+    		//OpenTK.Matrix4 perspective_matrix =
+			//	OpenTK.Matrix4.CreatePerspectiveFieldOfView(fov, (float)aspect_ratio, near_distance, far_distance);
+
+			////Then we tell GL to use are matrix as the new Projection matrix.
+			//GL.MatrixMode(MatrixMode.Projection);
+			//GL.LoadMatrix(ref perspective_matrix);
 
 			GL.Enable(EnableCap.DepthTest);// 'Enable correct Z Drawings
 			GL.DepthFunc(DepthFunction.Less);// 'Enable correct Z Drawings
-			GL.Viewport(0, 0, Width, Height);
+			//GL.Viewport(0, 0, Width, Height);
 
 			GL.Enable(EnableCap.CullFace);
 			GL.CullFace(CullFaceMode.Back);
@@ -187,10 +243,31 @@ namespace PlanetGenerator
 			GL.MatrixMode(MatrixMode.Modelview); // Swap to modelview so can draw the objects
 			GL.LoadIdentity();
 
-			GL.Translate(0, -1, -5); // Translate back so can see the origin
-			GL.Rotate (rotation, 0f, 1f, 0f);
+	//		GL.Translate(0, -1, -5); // Translate back so can see the origin
+	//		GL.Rotate (rotation, 0f, 1f, 0f);
 
-			foreach (var poly in Landscape.GetPolys()) {
+
+
+            // activate shader program and set uniforms
+            this.shaderProgram.Use();
+            this.projectionMatrix.Set(this.shaderProgram);
+
+            // bind vertex buffer and array objects
+            this.vertexBuffer.Bind();
+            this.vertexArray.Bind();
+
+            // upload vertices to GPU and draw them
+            this.vertexBuffer.BufferData();
+            this.vertexBuffer.Draw();
+
+            // reset state for potential further draw calls (optional, but good practice)
+            GL.BindVertexArray(0);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            GL.UseProgram(0);
+
+
+
+            foreach (var poly in Landscape.GetPolys()) {
 				GL.Begin (PrimitiveType.Triangles);
 				GL.Color3 (1, 1, 1); GL.Vertex3 (poly.A.X, poly.A.Y, poly.A.Z);
 				GL.Color3 (1, 0, 0); GL.Vertex3 (poly.B.X, poly.B.Y, poly.B.Z);
