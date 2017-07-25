@@ -1,0 +1,6 @@
+[submodule "Deps/NoiseLibrary"]
+	path = Deps/NoiseLibrary
+	url = https://github.com/spoconnor/NoiseLibrary.git
+[submodule "Deps/AwGraphics"]
+	path = Deps/AwGraphics
+	url = https://github.com/amulware/awgraphics.git
