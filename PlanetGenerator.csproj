@@ -30,9 +30,6 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Shared">
-      <HintPath>Deps\Shared.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="OpenTK">
       <HintPath>packages\OpenTK.2.0.0\lib\net20\OpenTK.dll</HintPath>
@@ -55,7 +52,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Deps\awgraphics\src\amulware.Graphics\amulware.Graphics.csproj">
+    <ProjectReference Include="Deps\AwGraphics\src\amulware.Graphics\amulware.Graphics.csproj">
       <Project>{59beda5c-d68a-4011-89ba-c09421d22974}</Project>
       <Name>amulware.Graphics</Name>
     </ProjectReference>

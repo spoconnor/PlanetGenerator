@@ -12,11 +12,6 @@ namespace PlanetGenerator
 {
 	class GameRenderer : GameWindow
 	{
-        VertexBuffer<ColouredVertex> vertexBuffer;
-        ShaderProgram shaderProgram;
-        VertexArray<ColouredVertex> vertexArray;
-        Matrix4Uniform projectionMatrix;
-
         TextRenderer renderer;
 		Landscape Landscape;
 		MouseState mouseState;
@@ -75,21 +70,15 @@ namespace PlanetGenerator
 			GL.Color3(1.0, 1.0, 1.0);
 
             float aspect_ratio = Width / (float)Height; // Aspect ratio of the screen
-
-            // create projection matrix uniform
-            this.projectionMatrix = new Matrix4Uniform("projectionMatrix");
-            this.projectionMatrix.Matrix = Matrix4.CreatePerspectiveFieldOfView(
-                MathHelper.PiOver2, aspect_ratio, 0.1f, 100f);
-
-			//float fov = 1.0f;  // camera field of view
-			//float near_distance = 1.0f; // The nearest the camera can see. >= 0.1f else clips
-			//float far_distance = 1000.0f; // Fartherest the camera can see
-    		//OpenTK.Matrix4 perspective_matrix =
-			//	OpenTK.Matrix4.CreatePerspectiveFieldOfView(fov, (float)aspect_ratio, near_distance, far_distance);
+			float fov = MathHelper.PiOver2;  // camera field of view
+			float near_distance = 0.1f; // The nearest the camera can see. >= 0.1f else clips
+			float far_distance = 100.0f; // Fartherest the camera can see
+    		OpenTK.Matrix4 perspective_matrix =
+				OpenTK.Matrix4.CreatePerspectiveFieldOfView(fov, aspect_ratio, near_distance, far_distance);
 
 			////Then we tell GL to use are matrix as the new Projection matrix.
-			//GL.MatrixMode(MatrixMode.Projection);
-			//GL.LoadMatrix(ref perspective_matrix);
+			GL.MatrixMode(MatrixMode.Projection);
+			GL.LoadMatrix(ref perspective_matrix);
 
 			GL.Enable(EnableCap.DepthTest);// 'Enable correct Z Drawings
 			GL.DepthFunc(DepthFunction.Less);// 'Enable correct Z Drawings

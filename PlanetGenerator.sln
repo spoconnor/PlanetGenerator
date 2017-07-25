@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlanetGenerator", "PlanetGenerator.csproj", "{6F147F39-77B5-4810-9A64-34ACB13DF9F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "amulware.Graphics", "Deps\awgraphics\src\amulware.Graphics\amulware.Graphics.csproj", "{59BEDA5C-D68A-4011-89BA-C09421D22974}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "amulware.Graphics", "Deps\AwGraphics\src\amulware.Graphics\amulware.Graphics.csproj", "{59BEDA5C-D68A-4011-89BA-C09421D22974}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoiseLibrary", "Deps\NoiseLibrary\NoiseLibrary.csproj", "{FCFC12E5-62A9-4DBA-9ED4-E190C1A881B0}"
 EndProject
