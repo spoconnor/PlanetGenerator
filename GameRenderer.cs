@@ -74,54 +74,6 @@ namespace PlanetGenerator
 			GL.ClearColor(0.1f, 0.39f, 0.88f, 1.0f);
 			GL.Color3(1.0, 1.0, 1.0);
 
-
-            // create and fill a vertex buffer
-            this.vertexBuffer = new VertexBuffer<ColouredVertex>(ColouredVertex.Size);
-
-            this.vertexBuffer.AddVertex(new ColouredVertex(new Vector3(-1, -1, -1.5f), Color4.Lime));
-            this.vertexBuffer.AddVertex(new ColouredVertex(new Vector3(1, 1, -1.5f), Color4.Red));
-            this.vertexBuffer.AddVertex(new ColouredVertex(new Vector3(1, -1, -1.5f), Color4.Blue));
-
-            // load shaders
-            #region Shaders
-
-            var vertexShader = new Shader(ShaderType.VertexShader,
-                @"#version 130
-// a projection transformation to apply to the vertex' position
-uniform mat4 projectionMatrix;
-// attributes of our vertex
-in vec3 vPosition;
-in vec4 vColor;
-out vec4 fColor; // must match name in fragment shader
-void main()
-{
-    // gl_Position is a special variable of OpenGL that must be set
-	gl_Position = projectionMatrix * vec4(vPosition, 1.0);
-	fColor = vColor;
-}"
-                );
-            var fragmentShader = new Shader(ShaderType.FragmentShader,
-                @"#version 130
-in vec4 fColor; // must match name in vertex shader
-out vec4 fragColor; // first out variable is automatically written to the screen
-void main()
-{
-    fragColor = fColor;
-}"
-                );
-
-            #endregion
-
-            // link shaders into shader program
-            this.shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
-
-            // create vertex array to specify vertex layout
-            this.vertexArray = new VertexArray<ColouredVertex>(
-                this.vertexBuffer, this.shaderProgram,
-                new VertexAttribute("vPosition", 3, VertexAttribPointerType.Float, ColouredVertex.Size, 0),
-                new VertexAttribute("vColor", 4, VertexAttribPointerType.Float, ColouredVertex.Size, 12)
-            );
-
             float aspect_ratio = Width / (float)Height; // Aspect ratio of the screen
 
             // create projection matrix uniform
@@ -243,29 +195,8 @@ void main()
 			GL.MatrixMode(MatrixMode.Modelview); // Swap to modelview so can draw the objects
 			GL.LoadIdentity();
 
-	//		GL.Translate(0, -1, -5); // Translate back so can see the origin
-	//		GL.Rotate (rotation, 0f, 1f, 0f);
-
-
-
-            // activate shader program and set uniforms
-            this.shaderProgram.Use();
-            this.projectionMatrix.Set(this.shaderProgram);
-
-            // bind vertex buffer and array objects
-            this.vertexBuffer.Bind();
-            this.vertexArray.Bind();
-
-            // upload vertices to GPU and draw them
-            this.vertexBuffer.BufferData();
-            this.vertexBuffer.Draw();
-
-            // reset state for potential further draw calls (optional, but good practice)
-            GL.BindVertexArray(0);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.UseProgram(0);
-
-
+			GL.Translate(0, -1, -5); // Translate back so can see the origin
+			GL.Rotate (rotation, 0f, 1f, 0f);
 
             foreach (var poly in Landscape.GetPolys()) {
 				GL.Begin (PrimitiveType.Triangles);
@@ -279,17 +210,6 @@ void main()
 			rotation++;
 
 		/*
-            //RenderGui();
-            GL.MatrixMode(MatrixMode.Projection);        // Select the Projection matrix for operation
-            GL.LoadIdentity();                           // Reset Projection matrix
-			GL.Ortho(0, this.Width * Scale, 0, this.Height * Scale, -1.0, 1.0);             // Set clipping area's left, right, bottom, top
-            GL.MatrixMode(MatrixMode.Modelview);         // Select the ModelView for operation
-            GL.LoadIdentity();                           // Reset the Model View Matrix
-
-            GL.Clear(ClearBufferMask.ColorBufferBit);// | ClearBufferMask.DepthBufferBit);
-            GL.Disable(EnableCap.DepthTest);
-
-            GL.PushMatrix();
 			foreach (var poly in Landscape.GetPolys())
             {
 				//int texture = textures [(int)blockType];
@@ -313,11 +233,7 @@ void main()
 				}
             	GL.PopMatrix();
 			}
-			GL.PopMatrix ();
-            SwapBuffers();
 			*/
-
-
 
 		}
 
