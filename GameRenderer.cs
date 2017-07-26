@@ -61,7 +61,11 @@ namespace PlanetGenerator
 			GL.Light (LightName.Light0, LightParameter.Specular, white);
 			GL.Light (LightName.Light0, LightParameter.Position, direction);
 
-			GL.Enable(EnableCap.Lighting);                // so the renderer considers light
+            //GL.LightModel(LightModelParameter.LightModelAmbient, new float[] { 0.2f, 0.2f, 0.2f, 1.0f });
+            //GL.LightModel(LightModelParameter.LightModelTwoSide, 1);
+            //GL.LightModel(LightModelParameter.LightModelLocalViewer, 1);
+
+            GL.Enable(EnableCap.Lighting);                // so the renderer considers light
 			GL.Enable(EnableCap.Light0);                  // turn LIGHT0 on
 			GL.Enable(EnableCap.DepthTest);              // so the renderer considers depth
 
@@ -151,6 +155,7 @@ namespace PlanetGenerator
         void OnKeyPress (object sender, KeyPressEventArgs e)
 		{
             if (e.KeyChar == '1') {
+                Landscape.ZoomIn();
             //    Global.Direction = Facing.North;
             } else if (e.KeyChar == '2') {
             //    Global.Direction = Facing.East;
@@ -177,11 +182,14 @@ namespace PlanetGenerator
 
 		}
 
-		protected override void OnRenderFrame(FrameEventArgs e)
+      
+        protected override void OnRenderFrame(FrameEventArgs e)
 		{
 			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-			GL.MatrixMode(MatrixMode.Modelview); // Swap to modelview so can draw the objects
+            //Matrix4 lookat = Matrix4.LookAt(0, 0, -7.5f + zoom, 0, 0, 0, 0, 1, 0);
+            GL.MatrixMode(MatrixMode.Modelview); // Swap to modelview so can draw the objects
+            //GL.LoadMatrix(ref lookat);
 			GL.LoadIdentity();
 
 			GL.Translate(0, -1, -5); // Translate back so can see the origin
@@ -189,9 +197,9 @@ namespace PlanetGenerator
 
             foreach (var poly in Landscape.GetPolys()) {
 				GL.Begin (PrimitiveType.Triangles);
-				GL.Color3 (1, 1, 1); GL.Vertex3 (poly.A.X, poly.A.Y, poly.A.Z);
-				GL.Color3 (1, 0, 0); GL.Vertex3 (poly.B.X, poly.B.Y, poly.B.Z);
-				GL.Color3 (0, 1, 0); GL.Vertex3 (poly.C.X, poly.C.Y, poly.C.Z);
+				GL.Color3 (1, 1, 1); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.A.X, poly.A.Y, poly.A.Z);
+				GL.Color3 (1, 0, 0); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.B.X, poly.B.Y, poly.B.Z);
+				GL.Color3 (0, 1, 0); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.C.X, poly.C.Y, poly.C.Z);
 				GL.End ();
 			}
             SwapBuffers();
