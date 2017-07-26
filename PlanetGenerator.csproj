@@ -45,6 +45,7 @@
     <Compile Include="TextRenderer.cs" />
     <Compile Include="Landscape.cs" />
     <Compile Include="TestGameWindow.cs" />
+    <Compile Include="UniqueQueue.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -53,11 +54,11 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Deps\AwGraphics\src\amulware.Graphics\amulware.Graphics.csproj">
-      <Project>{59beda5c-d68a-4011-89ba-c09421d22974}</Project>
+      <Project>{59BEDA5C-D68A-4011-89BA-C09421D22974}</Project>
       <Name>amulware.Graphics</Name>
     </ProjectReference>
     <ProjectReference Include="Deps\NoiseLibrary\NoiseLibrary.csproj">
-      <Project>{fcfc12e5-62a9-4dba-9ed4-e190c1a881b0}</Project>
+      <Project>{FCFC12E5-62A9-4DBA-9ED4-E190C1A881B0}</Project>
       <Name>NoiseLibrary</Name>
     </ProjectReference>
   </ItemGroup>

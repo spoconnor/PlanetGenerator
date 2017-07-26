@@ -1,6 +1,7 @@
 ﻿using OpenTK;
 using System;
 using System.Collections.Generic;
+using Sean.WorldGenerator;
 
 namespace PlanetGenerator
 {
@@ -39,6 +40,37 @@ namespace PlanetGenerator
             return norm;
         }
 
+		public override bool Equals(object obj)
+		{
+			Poly item = obj as Poly;
+			if (item == null)
+				return false;
+			return  item.A == this.A && item.B == this.B && item.C == this.C;
+		}
+
+		public override int GetHashCode()
+		{
+			return CombineHashCodes(new List<int>(){ A.GetHashCode (), B.GetHashCode (), C.GetHashCode () });
+		}
+
+		// System.String.GetHashCode(): http://referencesource.microsoft.com/#mscorlib/system/string.cs,0a17bbac4851d0d4
+		// System.Web.Util.StringUtil.GetStringHashCode(System.String): http://referencesource.microsoft.com/#System.Web/Util/StringUtil.cs,c97063570b4e791a
+		public static int CombineHashCodes(IEnumerable<int> hashCodes)
+		{
+			int hash1 = (5381 << 16) + 5381;
+			int hash2 = hash1;
+			int i = 0;
+			foreach (var hashCode in hashCodes)
+			{
+				if (i % 2 == 0)
+					hash1 = ((hash1 << 5) + hash1 + (hash1 >> 27)) ^ hashCode;
+				else
+					hash2 = ((hash2 << 5) + hash2 + (hash2 >> 27)) ^ hashCode;
+
+				++i;
+			}
+			return hash1 + (hash2 * 1566083941);
+		}
     }
 
     public class Landscape
@@ -70,6 +102,9 @@ namespace PlanetGenerator
     
         public void ZoomIn()
         {
+			var selected = new List<Vector3>();
+			var excluded = new List<Vector3>();
+
             var newPoints = new Dictionary<Vector3, Vector3>();
             var newPolys = new List<Poly>();
             foreach (var poly in polys)
@@ -85,66 +120,90 @@ namespace PlanetGenerator
                 //	(x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
                 //	is maximized.
 
-                var ab = (poly.A - poly.B).Length;
-                var bc = (poly.B - poly.C).Length;
-                var ca = (poly.C - poly.A).Length;
+				var AB = (poly.A + poly.B) / 2;
+				var BC = (poly.B + poly.C) / 2;
+				var CA = (poly.C + poly.A) / 2;
 
-                var a = poly.A;
-                var b = poly.B;
-                var c = poly.C;
-                Vector3 n;
+				//var ab_len = (poly.A - poly.B).Length;
+				//var bc_len = (poly.B - poly.C).Length;
+				//var ca_len = (poly.C - poly.A).Length;
+
+				Vector3 ab = new Vector3 ();
+				Vector3 a, b, c;
                 Vector3 m = new Vector3();
 
-                if (bc > ab && bc > ca)
-                {
-                    a = poly.B;
-                    b = poly.C;
-                    c = poly.A;
-                }
-                else if (ca > ab && ca > bc)
-                {
-                    a = poly.C;
-                    b = poly.A;
-                    c = poly.B;
-                }
+				if (selected.Contains (AB)) {
+					a = poly.A;
+					b = poly.B;
+					c = poly.C;
+					ab = AB;
+				} else if (selected.Contains (BC)) {
+					a = poly.B;
+					b = poly.C;
+					c = poly.A;
+					ab = BC;
+				} else if (selected.Contains (CA)) {
+					a = poly.C;
+					b = poly.A;
+					c = poly.B;
+					ab = CA;
+				} else {
+					if (excluded.Contains (AB)) {
+						a = poly.B;
+						b = poly.C;
+						c = poly.A;
+						ab = BC;
+					} else if (excluded.Contains (BC)) {
+						a = poly.C;
+						b = poly.A;
+						c = poly.B;
+						ab = CA;
+					} else if (excluded.Contains (CA)) {
+						a = poly.A;
+						b = poly.B;
+						c = poly.C;
+						ab = AB;
+					} else {
+						a = poly.A;
+						b = poly.B;
+						c = poly.C;
+						ab = AB;
+					}
+   				}
 
-                n = ((poly.A + poly.B) / 2);
-                if (newPoints.ContainsKey(n))
+                /*
+                if (bc_len > ab_len && bc_len > ca_len)
                 {
-                    m = newPoints[n];
-                }
-                n = ((poly.B + poly.C) / 2);
-                if (newPoints.ContainsKey(n))
-                {
-                    m = newPoints[n];
                     a = poly.B;
                     b = poly.C;
                     c = poly.A;
                 }
-                n = ((poly.C + poly.A) / 2);
-                if (newPoints.ContainsKey(n))
+                else if (ca_len > ab_len && ca_len > bc_len)
                 {
-                    m = newPoints[n];
                     a = poly.C;
                     b = poly.A;
                     c = poly.B;
                 }
-                
+                */
+       
                 //	Define new vertex vm by
                 //	  (xm, ym, zm) = ((x1 + x2)/2, (y1 + y2)/2, (z1 + z2)/2)
                 //		l = sqrt( (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
                 //		sm = random((s1 + s2)/2)
                 //		am = (a1 + a2)/2 + offset(sm, l, a1, a2)
 
-                if (m.Length == 0)
-                {
-                    n = ((a + b) / 2);
-                    m = n * (1 / n.Length); // normalize point to radius 1
+                //if (m.Length == 0)
+                //{
+                m = ab * (1 / ab.Length); // normalize point to radius 1
 
-                    newPoints.Add(n, m);
-                }
+                //newPoints.Add(n, m);
+                //}
                 newPolys.Add(new Poly(a, m, c));
                 newPolys.Add(new Poly(m, b, c));
+
+				selected.Add (AB);
+				excluded.Add (BC);
+				excluded.Add (CA);
 
                 //	 If p is contained in the tetrahedron defined by the four
                 //		vertices vm, v1, v3 and v4, set v2 = vm. Otherwise, set
