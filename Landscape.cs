@@ -117,24 +117,20 @@ namespace PlanetGenerator
 
         public void ZoomIn()
         {
+			var canSkip = new List<int>();
 			var done = new List<Vector3>();
-			var selected = new List<Vector3>();
-			var excluded = new List<Vector3>();
-
-            var newPoints = new Dictionary<Vector3, Vector3>();
             var newPolys = new SortedSet<Poly>(new PolySorter());
-            foreach (var poly in polys)
+			var polyArray = new Poly[polys.Count];
+			polys.CopyTo (polyArray);
+			for (int i = 0; i < polyArray.Length; i++)
             {
-                //Input: A target point p and four vertices v1, . . . , v4 of a tetrahedron,
-                //each with the following information:
-                //Coordinates (xi, yi, zi)
-                //Seed for pseudo-random number generator si
-                //	Altitude value ai
-
-                //	Re-order vertices v1, . . . , v4 so the longest edge of the
-                //	tetrahedron is between v1 and v2, i.e., such that
-                //	(x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
-                //	is maximized.
+				if (canSkip.Contains(i)) continue;
+				var poly = polyArray[i];
+				if (i>polyArray.Length/2)
+				{
+					newPolys.Add(poly);
+					continue;
+				}
 
 				Vector3 a, b, c;
 				Vector3 ab,bc,ca;
@@ -160,7 +156,7 @@ namespace PlanetGenerator
                 }
                 else
                 {
-                    // Can't split
+					//Console.WriteLine ("Cant split");
                     newPolys.Add(poly);
                     done.Add(poly.AB);
                     done.Add(poly.BC);
@@ -168,12 +164,6 @@ namespace PlanetGenerator
                     continue;
                 }
              
-                //	Define new vertex vm by
-                //	  (xm, ym, zm) = ((x1 + x2)/2, (y1 + y2)/2, (z1 + z2)/2)
-                //		l = sqrt( (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
-                //		sm = random((s1 + s2)/2)
-                //		am = (a1 + a2)/2 + offset(sm, l, a1, a2)
-
                 m = ab * (1 / ab.Length); // normalize point to radius 1
 
                 newPolys.Add(new Poly(a, m, c));
@@ -183,17 +173,18 @@ namespace PlanetGenerator
 				done.Add (bc);
 				done.Add (ca);
 
-                // find other poly sharing ab line
-                foreach (var poly2 in polys)
+                // find other poly sharing split ab line
+				for (int j = i+1; j < polyArray.Length; j++)
                 {
-                    if (poly == poly2)
-                        continue;
+					var poly2 = polyArray[j];
                     if (poly2.AB == ab)
                     {
                         newPolys.Add(new Poly(poly2.A, m, poly2.C));
                         newPolys.Add(new Poly(m, poly2.B, poly2.C));
                         done.Add(poly2.BC);
                         done.Add(poly2.CA);
+						canSkip.Add (j);
+						break;
                     }
                     else if (poly2.BC == ab)
                     {
@@ -201,6 +192,8 @@ namespace PlanetGenerator
                         newPolys.Add(new Poly(m, poly2.C, poly2.A));
                         done.Add(poly2.AB);
                         done.Add(poly2.CA);
+						canSkip.Add (j);
+						break;
                     }
                     else if (poly2.CA == ab)
                     {
@@ -208,17 +201,13 @@ namespace PlanetGenerator
                         newPolys.Add(new Poly(m, poly2.A, poly2.B));
                         done.Add(poly2.AB);
                         done.Add(poly2.BC);
+						canSkip.Add (j);
+						break;
                     }
                 }
-                //	 If p is contained in the tetrahedron defined by the four
-                //		vertices vm, v1, v3 and v4, set v2 = vm. Otherwise, set
-                //        v1 = vm.
-
-                    //	Repeat Until: l is small enough
-
-                    //	Return: (a1 + a2 + a3 + a4)/4
             }
             polys = newPolys;
+			Console.WriteLine ($"{polys.Count} polygons");
         }    
     }
 }

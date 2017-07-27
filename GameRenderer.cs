@@ -192,7 +192,7 @@ namespace PlanetGenerator
             //GL.LoadMatrix(ref lookat);
 			GL.LoadIdentity();
 
-			GL.Translate(0, -1, -5); // Translate back so can see the origin
+			GL.Translate(0, -1, -3); // Translate back so can see the origin
 			GL.Rotate (rotation, 0f, 1f, 0f);
 
             foreach (var poly in Landscape.GetPolys()) {
