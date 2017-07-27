@@ -25,10 +25,18 @@ namespace PlanetGenerator
 			A = a;
 			B = b;
 			C = c;
+            AB = (A + B) / 2; 
+            BC = (B + C) / 2;
+            CA = (C + A) / 2;
 		}
-		public Vector3 A;
-		public Vector3 B;
-		public Vector3 C;
+        public Vector3 A, B, C;
+        public Vector3 AB, BC, CA; // Mid points
+
+        public float ABLen {  get { return (A - B).Length; } }
+        public float BCLen {  get { return (B - C).Length; } }
+        public float CALen {  get { return (C - A).Length; } }
+
+        public float MaxLength { get { return Math.Max(Math.Max(ABLen, BCLen), CALen); } }
 
         public Vector3 Normal()
         {
@@ -75,12 +83,12 @@ namespace PlanetGenerator
 
     public class Landscape
 	{
-		List<Poly> polys;
+        SortedSet<Poly> polys;
         const float r = 0.5773502691896258f; // 1/(sqrt 3)
 
 		public Landscape ()
 		{
-			polys = new List<Poly> ();
+			polys = new SortedSet<Poly> (new PolySorter());
 
 			var a = new Vector3(r, r, r); 
 			var b = new Vector3(r,-r,-r);
@@ -99,14 +107,22 @@ namespace PlanetGenerator
 				yield return poly;
 		}
 
-    
+        public class PolySorter : IComparer<Poly>
+        {
+            public int Compare(Poly p1, Poly p2)
+            {
+                return (p1.MaxLength < p2.MaxLength) ? 1 : -1;
+            }
+        }
+
         public void ZoomIn()
         {
+			var done = new List<Vector3>();
 			var selected = new List<Vector3>();
 			var excluded = new List<Vector3>();
 
             var newPoints = new Dictionary<Vector3, Vector3>();
-            var newPolys = new List<Poly>();
+            var newPolys = new SortedSet<Poly>(new PolySorter());
             foreach (var poly in polys)
             {
                 //Input: A target point p and four vertices v1, . . . , v4 of a tetrahedron,
@@ -120,98 +136,87 @@ namespace PlanetGenerator
                 //	(x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2
                 //	is maximized.
 
-				var AB = (poly.A + poly.B) / 2;
-				var BC = (poly.B + poly.C) / 2;
-				var CA = (poly.C + poly.A) / 2;
-
-				//var ab_len = (poly.A - poly.B).Length;
-				//var bc_len = (poly.B - poly.C).Length;
-				//var ca_len = (poly.C - poly.A).Length;
-
-				Vector3 ab = new Vector3 ();
 				Vector3 a, b, c;
+				Vector3 ab,bc,ca;
                 Vector3 m = new Vector3();
 
-				if (selected.Contains (AB)) {
-					a = poly.A;
-					b = poly.B;
-					c = poly.C;
-					ab = AB;
-				} else if (selected.Contains (BC)) {
-					a = poly.B;
-					b = poly.C;
-					c = poly.A;
-					ab = BC;
-				} else if (selected.Contains (CA)) {
-					a = poly.C;
-					b = poly.A;
-					c = poly.B;
-					ab = CA;
-				} else {
-					if (excluded.Contains (AB)) {
-						a = poly.B;
-						b = poly.C;
-						c = poly.A;
-						ab = BC;
-					} else if (excluded.Contains (BC)) {
-						a = poly.C;
-						b = poly.A;
-						c = poly.B;
-						ab = CA;
-					} else if (excluded.Contains (CA)) {
-						a = poly.A;
-						b = poly.B;
-						c = poly.C;
-						ab = AB;
-					} else {
-						a = poly.A;
-						b = poly.B;
-						c = poly.C;
-						ab = AB;
-					}
-   				}
-
-                /*
-                if (bc_len > ab_len && bc_len > ca_len)
+                var abDone = done.Contains(poly.AB);
+                var bcDone = done.Contains(poly.BC);
+                var caDone = done.Contains(poly.CA);
+                if (!abDone && (poly.ABLen >= poly.BCLen || bcDone) && (poly.ABLen >= poly.CALen || caDone))
                 {
-                    a = poly.B;
-                    b = poly.C;
-                    c = poly.A;
+                    a = poly.A; b = poly.B; c = poly.C;
+					ab = poly.AB; bc = poly.BC; ca = poly.CA;
                 }
-                else if (ca_len > ab_len && ca_len > bc_len)
+                else if (!bcDone && (poly.BCLen >= poly.ABLen || abDone) && (poly.BCLen >= poly.CALen || caDone))
                 {
-                    a = poly.C;
-                    b = poly.A;
-                    c = poly.B;
+                    a = poly.B; b = poly.C; c = poly.A;
+					ab = poly.BC; bc = poly.CA; ca = poly.AB;
                 }
-                */
-       
+                else if (!caDone && (poly.CALen >= poly.ABLen || abDone) && (poly.CALen >= poly.BCLen || bcDone))
+                {
+                    a = poly.C; b = poly.A; c = poly.B;
+					ab = poly.CA; bc = poly.AB; ca = poly.BC;
+                }
+                else
+                {
+                    // Can't split
+                    newPolys.Add(poly);
+                    done.Add(poly.AB);
+                    done.Add(poly.BC);
+                    done.Add(poly.CA);
+                    continue;
+                }
+             
                 //	Define new vertex vm by
                 //	  (xm, ym, zm) = ((x1 + x2)/2, (y1 + y2)/2, (z1 + z2)/2)
                 //		l = sqrt( (x1 - x2)^2 + (y1 - y2)^2 + (z1 - z2)^2)
                 //		sm = random((s1 + s2)/2)
                 //		am = (a1 + a2)/2 + offset(sm, l, a1, a2)
 
-                //if (m.Length == 0)
-                //{
                 m = ab * (1 / ab.Length); // normalize point to radius 1
 
-                //newPoints.Add(n, m);
-                //}
                 newPolys.Add(new Poly(a, m, c));
                 newPolys.Add(new Poly(m, b, c));
 
-				selected.Add (AB);
-				excluded.Add (BC);
-				excluded.Add (CA);
+				done.Add (ab);
+				done.Add (bc);
+				done.Add (ca);
 
+                // find other poly sharing ab line
+                foreach (var poly2 in polys)
+                {
+                    if (poly == poly2)
+                        continue;
+                    if (poly2.AB == ab)
+                    {
+                        newPolys.Add(new Poly(poly2.A, m, poly2.C));
+                        newPolys.Add(new Poly(m, poly2.B, poly2.C));
+                        done.Add(poly2.BC);
+                        done.Add(poly2.CA);
+                    }
+                    else if (poly2.BC == ab)
+                    {
+                        newPolys.Add(new Poly(poly2.B, m, poly2.A));
+                        newPolys.Add(new Poly(m, poly2.C, poly2.A));
+                        done.Add(poly2.AB);
+                        done.Add(poly2.CA);
+                    }
+                    else if (poly2.CA == ab)
+                    {
+                        newPolys.Add(new Poly(poly2.C, m, poly2.B));
+                        newPolys.Add(new Poly(m, poly2.A, poly2.B));
+                        done.Add(poly2.AB);
+                        done.Add(poly2.BC);
+                    }
+                }
                 //	 If p is contained in the tetrahedron defined by the four
                 //		vertices vm, v1, v3 and v4, set v2 = vm. Otherwise, set
                 //        v1 = vm.
 
-                //	Repeat Until: l is small enough
+                    //	Repeat Until: l is small enough
 
-                //	Return: (a1 + a2 + a3 + a4)/4
+                    //	Return: (a1 + a2 + a3 + a4)/4
             }
             polys = newPolys;
         }    
