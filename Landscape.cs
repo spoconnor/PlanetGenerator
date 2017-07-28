@@ -85,6 +85,7 @@ namespace PlanetGenerator
 	{
         SortedSet<Poly> polys;
         const float r = 0.5773502691896258f; // 1/(sqrt 3)
+        Random rnd = new Random();
 
 		public Landscape ()
 		{
@@ -163,8 +164,11 @@ namespace PlanetGenerator
                     done.Add(poly.CA);
                     continue;
                 }
-             
-                m = ab * (1 / ab.Length); // normalize point to radius 1
+
+                float avg = (a.Length + b.Length + c.Length) / 3;
+                float h = avg + (float)(rnd.NextDouble() - 0.5) * (0.1f * (a-b).Length);
+                //m = ab * (1 / ab.Length); // normalize point to radius 1
+                m = ab * (h / ab.Length);
 
                 newPolys.Add(new Poly(a, m, c));
                 newPolys.Add(new Poly(m, b, c));
