@@ -196,7 +196,15 @@ namespace PlanetGenerator
 			GL.Rotate (rotation, 0f, 1f, 0f);
 
             foreach (var poly in Landscape.GetPolys()) {
-				GL.Begin (PrimitiveType.Triangles);
+
+                // Color poly. Probably should be done in the shader
+                vec2 position = (gl_FragCoord.xy / resolution.xy);
+                vec4 top = vec4(1.0, 0.0, 1.0, 1.0);
+                vec4 bottom = vec4(1.0, 1.0, 0.0, 1.0);
+                gl_FragColor = vec4(mix(bottom, top, position.y));
+
+
+                GL.Begin (PrimitiveType.Triangles);
 				GL.Color3 (1, 1, 1); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.A.X, poly.A.Y, poly.A.Z);
 				GL.Color3 (1, 0, 0); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.B.X, poly.B.Y, poly.B.Z);
 				GL.Color3 (0, 1, 0); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.C.X, poly.C.Y, poly.C.Z);
