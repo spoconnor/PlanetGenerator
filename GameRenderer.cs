@@ -31,7 +31,8 @@ namespace PlanetGenerator
 		float cameraX=0.0f,cameraY=0.0f,cameraZ=5.0f;
 		float rotation;
 
-		public GameRenderer(Landscape landscape)
+
+        public GameRenderer(Landscape landscape)
 			:base(800,600, GraphicsMode.Default, "Planet Generator",
 				GameWindowFlags.Default, DisplayDevice.Default,
 				// ask for an OpenGL 3.0 forward compatible context
@@ -90,6 +91,8 @@ namespace PlanetGenerator
 
 			GL.Enable(EnableCap.CullFace);
 			GL.CullFace(CullFaceMode.Back);
+
+            //GL.ShadeModel(ShadingModel.Smooth);  // TODO - requires vertex normals to be calulated across polys
         }
 
 		private int LoadTexture(string filename)
@@ -195,19 +198,31 @@ namespace PlanetGenerator
 			GL.Translate(0, -1, -3); // Translate back so can see the origin
 			GL.Rotate (rotation, 0f, 1f, 0f);
 
+            var d1 = new float[] { 0.2f, 0.5f, 0.8f, 1.0f };
+            var d2 = new float[] { 0.3f, 0.8f, 0.4f, 1.0f };
+            var d3 = new float[] { 0.7f, 0.2f, 0.2f, 1.0f };
+
+            //GL.Enable(EnableCap.ColorMaterial);
+            //GL.Color3(1, 0, 0);
             foreach (var poly in Landscape.GetPolys()) {
 
                 // Color poly. Probably should be done in the shader
-                vec2 position = (gl_FragCoord.xy / resolution.xy);
-                vec4 top = vec4(1.0, 0.0, 1.0, 1.0);
-                vec4 bottom = vec4(1.0, 1.0, 0.0, 1.0);
-                gl_FragColor = vec4(mix(bottom, top, position.y));
-
+                if (poly.AverageVertex.Length > 1.0f)
+                    GL.Material(MaterialFace.Front, MaterialParameter.AmbientAndDiffuse, d1);
+                else
+                    GL.Material(MaterialFace.Front, MaterialParameter.AmbientAndDiffuse, d3);
 
                 GL.Begin (PrimitiveType.Triangles);
-				GL.Color3 (1, 1, 1); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.A.X, poly.A.Y, poly.A.Z);
-				GL.Color3 (1, 0, 0); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.B.X, poly.B.Y, poly.B.Z);
-				GL.Color3 (0, 1, 0); GL.Normal3(poly.Normal()); GL.Vertex3 (poly.C.X, poly.C.Y, poly.C.Z);
+
+                //GL.Color3 (1, 1, 1); GL.Normal3(poly.Normal());
+                //GL.Material(MaterialFace.Front, MaterialParameter.AmbientAndDiffuse, d1);
+                GL.Vertex3 (poly.A.X, poly.A.Y, poly.A.Z);
+				//GL.Color3 (1, 0, 0); GL.Normal3(poly.Normal());
+                //GL.Material(MaterialFace.Front, MaterialParameter.AmbientAndDiffuse, d2);
+                GL.Vertex3 (poly.B.X, poly.B.Y, poly.B.Z);
+				//GL.Color3 (0, 1, 0); GL.Normal3(poly.Normal());
+                //GL.Material(MaterialFace.Front, MaterialParameter.AmbientAndDiffuse, d3);
+                GL.Vertex3 (poly.C.X, poly.C.Y, poly.C.Z);
 				GL.End ();
 			}
             SwapBuffers();

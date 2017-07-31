@@ -37,6 +37,7 @@ namespace PlanetGenerator
         public float CALen {  get { return (C - A).Length; } }
 
         public float MaxLength { get { return Math.Max(Math.Max(ABLen, BCLen), CALen); } }
+        public Vector3 AverageVertex {  get { return (A + B + C) / 3; } }
 
         public Vector3 Normal()
         {
@@ -212,7 +213,38 @@ namespace PlanetGenerator
             }
             polys = newPolys;
 			Console.WriteLine ($"{polys.Count} polygons");
+            CreateMap();
         }    
+
+        void CreateMap()
+        {
+            var p = (int)(Math.Sqrt(polys.Count));
+            int resolution = 1;
+            while (resolution < p) resolution *= 2;
+            Console.WriteLine($"Map Resolution = {resolution}");
+
+            var map = new Sean.Shared.Array<byte>(resolution*2, resolution);
+            for (int lon = 0; lon < resolution; lon++)
+            {
+                var longitude = lon * 360 / resolution;
+                for (int lat = 0; lat < resolution; lat++)
+                {
+                    var latitude = lat * 180 / resolution;
+                    var poly = FindPoly(lon, lat);
+                }
+            }
+                
+        }
+        Poly FindPoly(int lon, int lat)
+        {
+            foreach(var poly in polys)
+            {
+                var ALog = Math.Asin(poly.A.X / poly.A.Z);
+                var ALat = Math.Acos(poly.A.Y);
+
+            }
+            return null;
+        }
     }
 }
 
