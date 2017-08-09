@@ -117,7 +117,7 @@ namespace PlanetGenerator
             }
         }
 
-        public void ZoomIn()
+        public void SplitPolys()
         {
 			var canSkip = new List<int>();
 			var done = new List<Vector3>();

@@ -29,7 +29,7 @@ namespace PlanetGenerator
 
 		float lookingX=0.0f,lookingY=0.0f,lookingZ=0.0f;
 		float cameraX=0.0f,cameraY=0.0f,cameraZ=5.0f;
-		float rotation;
+		float rotationX = 0.0f, rotationY = 0.0f;
 
 
         public GameRenderer(Landscape landscape)
@@ -157,16 +157,21 @@ namespace PlanetGenerator
 
         void OnKeyPress (object sender, KeyPressEventArgs e)
 		{
-            if (e.KeyChar == '1') {
-                Landscape.ZoomIn();
-            //    Global.Direction = Facing.North;
-            } else if (e.KeyChar == '2') {
-            //    Global.Direction = Facing.East;
-            } else if (e.KeyChar == '3') {
-            //    Global.Direction = Facing.South;
-            } else if (e.KeyChar == '4') {
-            //    Global.Direction = Facing.West;
-            }
+            if (e.KeyChar == 's') {
+                Landscape.SplitPolys();
+            } else if (e.KeyChar == '+') {
+				this.cameraZ -= (this.cameraZ / 10);
+            } else if (e.KeyChar == '-') {
+				this.cameraZ += (this.cameraZ / 10);
+            } else if (e.KeyChar == 'p') {
+				this.rotationY++;
+            } else if (e.KeyChar == 'o') {
+				this.rotationY--;
+            } else if (e.KeyChar == 'q') {
+				this.rotationX++;
+            } else if (e.KeyChar == 'a') {
+				this.rotationX--;
+            } 
 		}
 			
 		protected override void OnUpdateFrame(FrameEventArgs e)
@@ -195,8 +200,9 @@ namespace PlanetGenerator
             //GL.LoadMatrix(ref lookat);
 			GL.LoadIdentity();
 
-			GL.Translate(0, -1, -3); // Translate back so can see the origin
-			GL.Rotate (rotation, 0f, 1f, 0f);
+			GL.Translate(-cameraX, -cameraY, -cameraZ); // Translate back so can see the origin
+			GL.Rotate (rotationX, 1f, 0f, 0f);
+			GL.Rotate (rotationY, 0f, 1f, 0f);
 
             var d1 = new float[] { 0.2f, 0.5f, 0.8f, 1.0f };
             var d2 = new float[] { 0.3f, 0.8f, 0.4f, 1.0f };
@@ -226,8 +232,6 @@ namespace PlanetGenerator
 				GL.End ();
 			}
             SwapBuffers();
-
-			rotation++;
 
 		/*
 			foreach (var poly in Landscape.GetPolys())
