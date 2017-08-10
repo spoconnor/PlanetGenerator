@@ -7,6 +7,7 @@ using Sean.Shared;
 using OpenTK.Input;
 using System.IO;
 using OpenTK.Graphics;
+using amulware.Graphics;
 
 namespace PlanetGenerator
 {
@@ -14,25 +15,29 @@ namespace PlanetGenerator
 	{
         TextRenderer renderer;
 		Landscape Landscape;
-		MouseState mouseState;
-		Font serif = new Font(FontFamily.GenericSerif, 24);
-		Font sans = new Font(FontFamily.GenericSansSerif, 24);
-		Font mono = new Font(FontFamily.GenericMonospace, 24);
-		float angle;
-		int[] textures = new int[255];
-        int boxListIndex;
-		float mousePosX, mousePosY;
+		//MouseState mouseState;
+		//Font serif = new Font(FontFamily.GenericSerif, 24);
+		//Font sans = new Font(FontFamily.GenericSansSerif, 24);
+		//Font mono = new Font(FontFamily.GenericMonospace, 24);
+		//float angle;
+		//int[] textures = new int[255];
+        //int boxListIndex;
+		//float mousePosX, mousePosY;
 
-		float Scale = 1.0f;
-		int Direction = 1;
-		Vector3 LookingAt;
+		//float Scale = 1.0f;
+		//int Direction = 1;
+		//Vector3 LookingAt;
 
-		float lookingX=0.0f,lookingY=0.0f,lookingZ=0.0f;
+		//float lookingX=0.0f,lookingY=0.0f,lookingZ=0.0f;
 		float cameraX=0.0f,cameraY=0.0f,cameraZ=5.0f;
 		float rotationX = 0.0f, rotationY = 0.0f;
 
         Vector3d mouseSelect1 = new Vector3d(0, 0, 0);
-        Vector3d mouseSelect2 = new Vector3d(0, 0, 0);
+
+		//private VertexBuffer<ColouredVertex> vertexBuffer;
+		//private ShaderProgram shaderProgram;
+		//private VertexArray<ColouredVertex> vertexArray;
+		//private Matrix4Uniform projectionMatrix;
 
         public GameRenderer(Landscape landscape)
 			:base(800,600, GraphicsMode.Default, "Planet Generator",
@@ -70,7 +75,7 @@ namespace PlanetGenerator
 
             GL.Enable(EnableCap.Lighting);                // so the renderer considers light
 			GL.Enable(EnableCap.Light0);                  // turn LIGHT0 on
-			GL.Enable(EnableCap.DepthTest);              // so the renderer considers depth
+			GL.Enable(EnableCap.DepthTest);               // so the renderer considers depth
 
 			// Set the current clear color to sky blue and the current drawing color to white.
 			GL.ClearColor(0.1f, 0.39f, 0.88f, 1.0f);
@@ -208,7 +213,7 @@ namespace PlanetGenerator
 			GL.Rotate (rotationY, 0f, 1f, 0f);
 
             var d1 = new float[] { 0.2f, 0.5f, 0.8f, 1.0f };
-            var d2 = new float[] { 0.3f, 0.8f, 0.4f, 1.0f };
+            //var d2 = new float[] { 0.3f, 0.8f, 0.4f, 1.0f };
             var d3 = new float[] { 0.7f, 0.2f, 0.2f, 1.0f };
 
             //GL.Enable(EnableCap.ColorMaterial);

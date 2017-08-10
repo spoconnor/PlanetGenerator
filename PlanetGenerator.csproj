@@ -44,10 +44,10 @@
     <Compile Include="Generator.cs" />
     <Compile Include="GameRenderer.cs" />
     <Compile Include="ScreenWorldConversion.cs" />
-    <Compile Include="TextRenderer.cs" />
     <Compile Include="Landscape.cs" />
-    <Compile Include="TestGameWindow.cs" />
     <Compile Include="UniqueQueue.cs" />
+    <Compile Include="TextRenderer.cs" />
+    <Compile Include="Shader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
