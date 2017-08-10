@@ -31,6 +31,8 @@ namespace PlanetGenerator
 		float cameraX=0.0f,cameraY=0.0f,cameraZ=5.0f;
 		float rotationX = 0.0f, rotationY = 0.0f;
 
+        Vector3d mouseSelect1 = new Vector3d(0, 0, 0);
+        Vector3d mouseSelect2 = new Vector3d(0, 0, 0);
 
         public GameRenderer(Landscape landscape)
 			:base(800,600, GraphicsMode.Default, "Planet Generator",
@@ -146,7 +148,8 @@ namespace PlanetGenerator
             //GL.ReadPixels<float>(mousePosX, mousePosY, 1, 1, OpenTK.Graphics.OpenGL.PixelFormat.DepthComponent, PixelType.Float, ref pixels);
             //Console.WriteLine(pixels);
 
-            //Console.WriteLine($"{mousePosX},{mousePosY}");
+            mouseSelect1 = ScreenWorldConversion.ScreenToWorld(new Vector2d(e.X, e.Y));
+            Console.WriteLine($"Mouse click:{mouseSelect1}");
         }
 
         private void OnMouseMove(object sender, MouseMoveEventArgs e)
@@ -231,6 +234,11 @@ namespace PlanetGenerator
                 GL.Vertex3 (poly.C.X, poly.C.Y, poly.C.Z);
 				GL.End ();
 			}
+            //GL.Begin(PrimitiveType.Lines);
+            //GL.Vertex3(mouseSelect1);
+            //GL.Vertex3(0,0,0);
+            //GL.End();
+
             SwapBuffers();
 
 		/*
@@ -261,5 +269,5 @@ namespace PlanetGenerator
 
 		}
 
-	}
+    }
 }
